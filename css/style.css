@@ -272,7 +272,7 @@ body {
 .gaiji-highlight { color: #dc2626; font-weight: 700; background: #fef2f2; border-radius: 3px; padding: 1px 4px; }
 
 /* ダウンロードボタン群 */
-.dl-wrap { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.dl-wrap { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 0; margin-bottom: 16px; }
 .dl-btn {
   display: flex; align-items: center; gap: 7px;
   padding: 9px 18px; border-radius: 10px;
@@ -282,6 +282,24 @@ body {
 .dl-btn:hover { opacity: .85; }
 .dl-btn-report  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 .dl-btn-convert { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+/* 外字チェック専用ダウンロードボタン */
+.gaiji-dl-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #fff; border: none; border-radius: 10px;
+  font-size: .9rem; font-weight: 700; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(22,163,74,.3);
+  transition: opacity .2s, transform .1s, box-shadow .2s;
+  white-space: nowrap;
+}
+.gaiji-dl-btn:hover {
+  opacity: .92; transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(22,163,74,.4);
+}
+.gaiji-dl-btn:active { transform: translateY(0); box-shadow: 0 1px 4px rgba(22,163,74,.2); }
+.gaiji-no-dl { font-size: .85rem; color: #94a3b8; padding: 8px 0; }
 
 /* リセットボタン */
 .reset-btn {
