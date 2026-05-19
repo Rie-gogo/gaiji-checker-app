@@ -139,32 +139,42 @@ gInputCsv.addEventListener('change', e => {
   gInputCsv.value = '';
 });
 
-// ─── Excel ファイル読み込み ────────────────────────────────
+// ─── チェック対象ファイル読み込み（Excel / CSV 共通） ────────
 async function loadGaijiExcel(file) {
-  if (!/\.(xlsx|xls)$/i.test(file.name)) {
-    alert('Excelファイル（.xlsx/.xls）を選択してください。');
+  const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+  const isCsv   = /\.csv$/i.test(file.name);
+  if (!isExcel && !isCsv) {
+    alert('Excel（.xlsx/.xls）またはCSV（.csv）ファイルを選択してください。');
     return;
   }
   try {
-    const buf = await file.arrayBuffer();
-    const wb  = XLSX.read(buf, { type: 'array', cellText: true, cellDates: true, raw: false });
-
-    const targetSheets = gOptAllSheets() ? wb.SheetNames : [wb.SheetNames[0]];
-    const sheets = targetSheets.map(name => {
-      const ws = wb.Sheets[name];
-      if (!ws || !ws['!ref']) return { sheetName: name, rows: [] };
-      const range = XLSX.utils.decode_range(ws['!ref']);
-      const rows = [];
-      for (let R = range.s.r; R <= range.e.r; R++) {
-        const row = [];
-        for (let C = range.s.c; C <= range.e.c; C++) {
-          const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
-          row.push(cellText(cell));
+    let sheets;
+    if (isCsv) {
+      // CSV → 1シートとして扱う
+      const text = await file.text();
+      const rows = parseCsvToRows(text);
+      sheets = [{ sheetName: 'Sheet1', rows }];
+    } else {
+      // Excel
+      const buf = await file.arrayBuffer();
+      const wb  = XLSX.read(buf, { type: 'array', cellText: true, cellDates: true, raw: false });
+      const targetSheets = gOptAllSheets() ? wb.SheetNames : [wb.SheetNames[0]];
+      sheets = targetSheets.map(name => {
+        const ws = wb.Sheets[name];
+        if (!ws || !ws['!ref']) return { sheetName: name, rows: [] };
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        const rows = [];
+        for (let R = range.s.r; R <= range.e.r; R++) {
+          const row = [];
+          for (let C = range.s.c; C <= range.e.c; C++) {
+            const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+            row.push(cellText(cell));
+          }
+          rows.push(row);
         }
-        rows.push(row);
-      }
-      return { sheetName: name, rows };
-    });
+        return { sheetName: name, rows };
+      });
+    }
 
     gaijiExcelData = {
       fileName: file.name,
@@ -188,6 +198,37 @@ async function loadGaijiExcel(file) {
   } catch (e) {
     alert('ファイルの読み込みに失敗しました: ' + e.message);
   }
+}
+
+/**
+ * CSVテキストを行×列の2次元配列に変換する（RFC 4180準拠）
+ * @param {string} text
+ * @returns {string[][]}
+ */
+function parseCsvToRows(text) {
+  const rows = [];
+  const lines = text.split(/\r?\n/);
+  for (const line of lines) {
+    if (line.trim() === '') continue;
+    const cols = [];
+    let cur = '';
+    let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQ) {
+        if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+        else if (ch === '"') { inQ = false; }
+        else { cur += ch; }
+      } else {
+        if (ch === '"') { inQ = true; }
+        else if (ch === ',') { cols.push(cur); cur = ''; }
+        else { cur += ch; }
+      }
+    }
+    cols.push(cur);
+    rows.push(cols);
+  }
+  return rows;
 }
 
 // ─── 変換テーブルCSV 読み込み ──────────────────────────────

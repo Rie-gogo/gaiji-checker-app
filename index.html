@@ -59,7 +59,7 @@
       </div>
 
       <p class="desc">
-        Excelファイルを読み込み、<strong>外字（文字化けの原因となるUnicode私用領域の文字）</strong>が含まれているかを自動検出します。
+        Excel（.xlsx/.xls）またはCSVファイルを読み込み、<strong>外字（文字化けの原因となるUnicode私用領域の文字）</strong>が含まれているかを自動検出します。
         変換テーブルCSVを登録すると、外字を常用漢字に置き換えたCSVを出力できます。
       </p>
 
@@ -68,7 +68,7 @@
         <!-- Excelファイル -->
         <div class="drop-col">
           <div class="drop-label">
-            <span class="num-badge">①</span> チェック対象 Excel
+            <span class="num-badge">①</span> チェック対象ファイル
           </div>
           <div id="gaiji-drop-excel" class="drop-zone drop-zone-excel" tabindex="0">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.5">
@@ -78,8 +78,8 @@
               <line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/>
             </svg>
             <p class="drop-text">ドロップ または クリック</p>
-            <p class="drop-sub">.xlsx / .xls</p>
-            <input type="file" id="gaiji-input-excel" accept=".xlsx,.xls" class="visually-hidden" />
+            <p class="drop-sub">.xlsx / .xls / .csv</p>
+            <input type="file" id="gaiji-input-excel" accept=".xlsx,.xls,.csv" class="visually-hidden" />
           </div>
           <div id="gaiji-file-excel" class="file-info hidden"></div>
         </div>

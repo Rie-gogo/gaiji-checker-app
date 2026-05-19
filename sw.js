@@ -5,7 +5,7 @@
  */
 'use strict';
 
-const CACHE = 'gaiji-checker-v1';
+const CACHE = 'gaiji-checker-v2';
 const BASE = self.location.pathname.replace(/sw\.js$/, '');
 
 const PRECACHE_PATHS = [
