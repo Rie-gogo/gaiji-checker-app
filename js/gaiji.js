@@ -140,7 +140,7 @@ const gResetBtn    = document.getElementById('gaiji-reset-btn');
 
 // オプション
 const gOptAllSheets = () => document.getElementById('gaiji-opt-all-sheets').checked;
-const gOptConvert   = () => document.getElementById('gaiji-opt-convert').checked;
+
 const gOptFallback  = () => document.getElementById('gaiji-opt-fallback').value;
 
 // ─── ドロップ＆クリック（Excel） ──────────────────────────
@@ -335,17 +335,12 @@ async function runGaijiCheck() {
   await new Promise(r => setTimeout(r, 30));
 
   try {
-    const fallback = gOptFallback();
-    const doConvert = gOptConvert();
-
     // 全シートの外字チェック結果を収集
-    // sheetResults: [{ sheetName, detections: [{ row, col, value, gaijiChars, codepoints }], convertedRows }]
+    // sheetResults: [{ sheetName, detections: [{ row, col, value, gaijiChars, codepoints }] }]
     const sheetResults = gaijiExcelData.sheets.map(sheet => {
       const detections = [];
-      const convertedRows = [];
 
       sheet.rows.forEach((row, rowIdx) => {
-        const convertedRow = [];
         row.forEach((cell, colIdx) => {
           const checked = checkString(cell);
           if (checked.hasGaiji) {
@@ -357,18 +352,14 @@ async function runGaijiCheck() {
               codepoints: checked.codepoints,
             });
           }
-          if (doConvert) {
-            convertedRow.push(convertGaiji(cell, gaijiConvTable, fallback));
-          }
         });
-        if (doConvert) convertedRows.push(convertedRow);
       });
 
-      return { sheetName: sheet.sheetName, detections, convertedRows };
+      return { sheetName: sheet.sheetName, detections };
     });
 
     gProcessing.classList.add('hidden');
-    renderGaijiResult(sheetResults, doConvert, fallback);
+    renderGaijiResult(sheetResults);
   } catch (e) {
     gProcessing.classList.add('hidden');
     alert('チェック中にエラーが発生しました: ' + e.message);
@@ -378,13 +369,9 @@ async function runGaijiCheck() {
 // ─── 結果描画 ──────────────────────────────────────────────
 let gCurrentSheetIdx = 0;
 let gLastSheetResults = null;
-let gLastDoConvert = false;
-let gLastFallback = '?';
 
-function renderGaijiResult(sheetResults, doConvert, fallback) {
+function renderGaijiResult(sheetResults) {
   gLastSheetResults = sheetResults;
-  gLastDoConvert = doConvert;
-  gLastFallback = fallback;
   gCurrentSheetIdx = 0;
 
   const totalDetections = sheetResults.reduce((s, r) => s + r.detections.length, 0);
@@ -398,14 +385,14 @@ function renderGaijiResult(sheetResults, doConvert, fallback) {
         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
         <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg>
-      <span>外字が <strong>${totalDetections}</strong> 件検出されました。${doConvert ? '変換済みCSVをダウンロードできます。' : ''}</span>`;
+      <span>外字が <strong>${totalDetections}</strong> 件検出されました。</span>`;
   } else {
     gSummaryBanner.className = 'gaiji-summary-banner gaiji-banner-ok';
     gSummaryBanner.innerHTML = `
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
-      <span>外字は検出されませんでした。${doConvert ? '変換済みCSVをダウンロードできます。' : ''}</span>`;
+      <span>外字は検出されませんでした。</span>`;
   }
 
   // シートタブ（複数シート時）
@@ -429,7 +416,7 @@ function renderGaijiResult(sheetResults, doConvert, fallback) {
   }
 
   renderGaijiDetectTable(sheetResults[0]);
-  renderGaijiDownloadButtons(sheetResults, doConvert);
+  renderGaijiDownloadButtons(sheetResults);
 
   gResult.classList.remove('hidden');
   gResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -482,7 +469,7 @@ function GaijiChecker_cpStr(char) {
 /**
  * ダウンロードボタンを描画する。
  */
-function renderGaijiDownloadButtons(sheetResults, doConvert) {
+function renderGaijiDownloadButtons(sheetResults) {
   gDlWrap.innerHTML = '';
   const encEl = document.getElementById('opt-encoding');
   const enc = encEl ? encEl.value : 'utf8bom';
@@ -506,37 +493,8 @@ function renderGaijiDownloadButtons(sheetResults, doConvert) {
       外字検出レポート（${allDetections.length}件）をダウンロード`;
     reportBtn.addEventListener('click', () => dlCsv(reportCsv, reportName, enc));
     gDlWrap.appendChild(reportBtn);
-  }
-
-  // 変換済みCSVのダウンロード
-  if (doConvert) {
-    sheetResults.forEach(r => {
-      if (!r.convertedRows.length) return;
-      const csvText = r.convertedRows.map(row =>
-        row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')
-      ).join('\r\n');
-
-      const csvName = sheetResults.length > 1
-        ? `${gaijiExcelData.baseName}_${sanitize(r.sheetName)}_外字変換済み.csv`
-        : `${gaijiExcelData.baseName}_外字変換済み.csv`;
-
-      const btn = document.createElement('button');
-      btn.className = 'download-btn gaiji-dl-btn gaiji-dl-btn-convert';
-      btn.innerHTML = `
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        ${escH(csvName)} をダウンロード`;
-      btn.addEventListener('click', () => dlCsv(csvText, csvName, enc));
-      gDlWrap.appendChild(btn);
-    });
-  }
-
-  // 何もない場合
-  if (!gDlWrap.children.length) {
-    gDlWrap.innerHTML = '<p class="gaiji-no-dl">外字が検出されなかったため、ダウンロードファイルはありません。</p>';
+  } else {
+    gDlWrap.innerHTML = '<p class="gaiji-no-dl">外字が検出されませんでした。</p>';
   }
 }
 

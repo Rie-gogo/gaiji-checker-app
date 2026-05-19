@@ -59,8 +59,7 @@
       </div>
 
       <p class="desc">
-        Excel（.xlsx/.xls）またはCSVファイルを読み込み、<strong>外字（文字化けの原因となるUnicode私用領域の文字）</strong>が含まれているかを自動検出します。
-        変換テーブルCSVを登録すると、外字を常用漢字に置き換えたCSVを出力できます。
+        Excel（.xlsx/.xls）またはCSVファイルを読み込み、<strong>外字（文字化けの原因となるUnicode私用領域の文字）</strong>が含まれているかを自動検出し、外字検出レポート（CSV）をダウンロードできます。
       </p>
 
       <!-- ドロップゾーン -->
@@ -142,14 +141,7 @@
               <span class="option-desc">複数シートをまとめて外字検出</span>
             </div>
           </label>
-          <label class="option-item">
-            <input type="checkbox" id="gaiji-opt-convert" checked />
-            <span class="checkmark"></span>
-            <div class="option-text">
-              <span class="option-label">変換済みCSVも出力</span>
-              <span class="option-desc">外字を置き換えたCSVをダウンロード</span>
-            </div>
-          </label>
+
           <div class="option-item select-item">
             <div class="option-text">
               <span class="option-label">テーブル未登録の外字</span>
@@ -197,6 +189,9 @@
         <!-- シート別タブ -->
         <div id="gaiji-sheet-tabs" class="sheet-tabs" style="margin-top:12px"></div>
 
+        <!-- ダウンロードボタン -->
+        <div id="gaiji-dl-wrap" class="dl-wrap"></div>
+
         <!-- 外字一覧テーブル -->
         <div class="detect-section">
           <div class="preview-header">
@@ -207,9 +202,6 @@
             <div id="gaiji-detect-table" class="preview-table-container"></div>
           </div>
         </div>
-
-        <!-- ダウンロードボタン -->
-        <div id="gaiji-dl-wrap" class="dl-wrap"></div>
 
         <!-- リセット -->
         <button id="gaiji-reset-btn" class="reset-btn" style="margin-top:10px">
