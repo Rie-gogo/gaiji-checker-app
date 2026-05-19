@@ -79,7 +79,39 @@ function convertGaiji(text, convTable, fallback = '?') {
    UI / アプリ連携部分
    ═══════════════════════════════════════════════════════════ */
 
-// ─── 状態 ──────────────────────────────────────────────────
+// ─── ユーティリティ ────────────────────────────────────────
+function escH(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function stripExt(name) { return name.replace(/\.[^/.]+$/, ''); }
+
+function cellText(cell) {
+  if (!cell) return '';
+  if (cell.w !== undefined && cell.w !== null) return String(cell.w);
+  if (cell.v !== undefined && cell.v !== null) return String(cell.v);
+  return '';
+}
+
+function dlCsv(csvText, filename, enc) {
+  let data;
+  if (enc === 'utf8bom') {
+    const bom  = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const body = new TextEncoder().encode(csvText);
+    data = new Uint8Array(bom.length + body.length);
+    data.set(bom); data.set(body, bom.length);
+  } else {
+    data = new TextEncoder().encode(csvText);
+  }
+  const blob = new Blob([data], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href: url, download: filename });
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// ─── 状態 ──────────────────────────────────────────────
 let gaijiExcelData = null;  // { fileName, baseName, sheets: [{ sheetName, rows: [[]] }] }
 let gaijiConvTable = new Map(); // 外字 → 変換先
 let gaijiConvLoaded = false;    // 変換テーブルCSVが読み込まれているか
