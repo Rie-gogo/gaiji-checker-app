@@ -187,7 +187,7 @@ body {
 .option-label { display: block; font-size: .82rem; font-weight: 600; color: #1e293b; }
 .option-desc  { display: block; font-size: .73rem; color: #94a3b8; margin-top: 1px; }
 
-.select-item { cursor: default; }
+.select-item { cursor: default; flex-direction: column; align-items: flex-start; }
 .select-item:hover { border-color: #e2e8f0; }
 .option-select {
   margin-top: 6px; width: 100%; padding: 6px 8px;
