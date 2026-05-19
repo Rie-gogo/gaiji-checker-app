@@ -141,7 +141,6 @@ const gResetBtn    = document.getElementById('gaiji-reset-btn');
 // オプション
 const gOptAllSheets = () => document.getElementById('gaiji-opt-all-sheets').checked;
 
-const gOptFallback  = () => document.getElementById('gaiji-opt-fallback').value;
 
 // ─── ドロップ＆クリック（Excel） ──────────────────────────
 gDropExcel.addEventListener('dragover',  e => { e.preventDefault(); gDropExcel.classList.add('drag-over'); });
