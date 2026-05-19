@@ -92,6 +92,10 @@ function cellText(cell) {
   return '';
 }
 
+function sanitize(str) {
+  return String(str).replace(/[\\/:*?"<>|]/g, '_');
+}
+
 function dlCsv(csvText, filename, enc) {
   let data;
   if (enc === 'utf8bom') {
@@ -480,7 +484,8 @@ function GaijiChecker_cpStr(char) {
  */
 function renderGaijiDownloadButtons(sheetResults, doConvert) {
   gDlWrap.innerHTML = '';
-  const enc = document.getElementById('opt-encoding').value;
+  const encEl = document.getElementById('opt-encoding');
+  const enc = encEl ? encEl.value : 'utf8bom';
 
   // 検出結果CSVのダウンロード
   const allDetections = sheetResults.flatMap(r =>
